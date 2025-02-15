@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react"
 import { Button, Tooltip } from "antd"
-import { VideoCameraOutlined } from '@ant-design/icons'
+import { VideoCameraOutlined } from "@ant-design/icons"
 import { Event } from "@/model/event.model"
 import { handleDisplayEventDuration } from "@/utils/dateTime.util"
 import { EVENT_TYPE } from "@/constants/event.constant"

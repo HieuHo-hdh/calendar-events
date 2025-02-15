@@ -2,6 +2,7 @@ import './App.css'
 import { ConfigProvider } from 'antd';
 import { AppProvider } from '@/context/appContext'
 import CalendarPage from '@/pages/Calendar'
+import { CalendarContextProvider } from '@/context/calendarContext';
 
 function App() {
   return (
@@ -13,7 +14,9 @@ function App() {
       }}
     >
       <AppProvider>
-        <CalendarPage />
+        <CalendarContextProvider>
+          <CalendarPage />
+        </CalendarContextProvider>
       </AppProvider>
     </ConfigProvider>
   )
