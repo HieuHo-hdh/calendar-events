@@ -1,5 +1,5 @@
-import dayjs from "dayjs"
-import { FC, useContext, useMemo, useRef } from "react"
+import dayjs, { Dayjs } from "dayjs"
+import { FC, useContext, useMemo, useRef, useState } from "react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'
@@ -9,14 +9,24 @@ import { CalendarContext } from "@/context/calendarContext"
 import { MONTH_YEAR_DISPLAY_FORMAT } from "@/constants/dateTime.constant"
 import { handleParseArrayToLabelValueArray } from "@/utils/array.util"
 import { CALENDAR_VIEW, CALENDAR_VIEW_OPTIONS } from "@/constants/calendar.constant"
+import CreateEventModal from "@/components/Calendar/Modals/CreateEventModal"
+import { mockEvents } from "@/mocks/Events"
+import '@/styles/FullCalendar.style.css'
+import { EventClickArg } from "@fullcalendar/core/index.js"
 
 const MainCalendar: FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
+  const [showCreateEventModal, setShowCreateEventModal] = useState<boolean>(false);
+  const [clickedDay, setClickedDay] = useState<Dayjs>(dayjs());
 
   const context = useContext(CalendarContext);
   if (!context) throw new Error("Context is undefined");
   const { selectedDate, setSelectedDate } = context ?? {};
   
+  const currentDate = useMemo(() => {
+    return dayjs(selectedDate).format(MONTH_YEAR_DISPLAY_FORMAT);
+  }, [selectedDate])
+
   const handleToday = (): void => {
     if (calendarRef.current) {
       calendarRef.current.getApi().today()
@@ -40,19 +50,25 @@ const MainCalendar: FC = () => {
     }
   }
 
-  const currentDate = useMemo(() => {
-    return dayjs(selectedDate).format(MONTH_YEAR_DISPLAY_FORMAT);
-  }, [selectedDate])
-
   const handleDateClick = (event: DateClickArg): void => {
-    // TODO: Show modal here
-    console.log('Clicked on: ', event.date)
+    setShowCreateEventModal(true)
+    setClickedDay(dayjs(event.date))
+  }
+
+  const handleEventClick = (event: EventClickArg): void => {
+    const eventInfo = event.event.toJSON()
+    console.log('Event detail', eventInfo)
+    // TODO: Show event detail and edit
+  }
+
+  const handleShowCreateEventModel = (isVisible: boolean) => {
+    setShowCreateEventModal(isVisible)
   }
 
   return (
     <div className="full-calender-component flex flex-col bg-white border-solid border-gray-200 border-2 p-4 flex-auto xl:flex-1 h-[calc(100vh-2rem)] xl:h-[unset] rounded-md">
-      <div className="flex flex-row mb-4 items-center justify-between">
-        <div className="flex flex-row gap-4">
+      <div className="flex sm:flex-row flex-col gap-2 sm:gap-0 mb-4 items-center justify-between">
+        <div className="flex flex-row gap-2 md:gap-4">
           <Button type="default" className="border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" onClick={handleToday}>Today</Button>
           <div>
             <Button
@@ -70,11 +86,13 @@ const MainCalendar: FC = () => {
               onClick={handleNextMonth}
             />
           </div>
-        <span className="text-blue-dark font-semibold text-lg">{currentDate}</span>
+          <span className="text-blue-dark font-semibold self-center text-lg">{currentDate}</span>
         </div>
-        <Tooltip title="This feature is coming soon" placement="leftBottom">
-          <Select variant="outlined" popupClassName="capitalize" className="capitalize border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" value={CALENDAR_VIEW.MONTH} options={handleParseArrayToLabelValueArray(CALENDAR_VIEW_OPTIONS)} />
-        </Tooltip>
+        <div className="flex flex-row gap-1">
+          <Tooltip title="Coming soon" placement="bottom">
+            <Select title="" variant="outlined" popupClassName="capitalize" className="capitalize border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" value={CALENDAR_VIEW.MONTH} options={handleParseArrayToLabelValueArray(CALENDAR_VIEW_OPTIONS)} />
+          </Tooltip>
+        </div>
       </div>
       <FullCalendar
         ref={calendarRef}
@@ -84,11 +102,18 @@ const MainCalendar: FC = () => {
         initialView="dayGridMonth"
         editable={true}
         selectable={true}
-        selectMirror={true}
+        eventDisplay="list-item"
         dayMaxEvents={true}
-        events={[]}
+        events={mockEvents}
+        eventTimeFormat={{
+          hour: 'numeric',
+          minute: 'numeric',
+          meridiem: true,
+        }}
         dateClick={handleDateClick}
+        eventClick={handleEventClick}
       />
+      <CreateEventModal open={showCreateEventModal} onCancel={() => handleShowCreateEventModel(false)} clickedDay={clickedDay} />
     </div>
   )
 }

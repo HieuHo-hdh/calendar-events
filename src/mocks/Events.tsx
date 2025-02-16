@@ -9,7 +9,6 @@ export const mockEvents: Event[] = [
     type: EVENT_TYPE.APPOINTMENT,
     start: dayjs().toISOString(),
     end: dayjs().add(0.5, 'hour').toISOString(),
-    // date: dayjs().format(DATE_FORMAT),
     link: 'https://meet.google.com/landing',
     profile: {
       _id: Math.random().toString(),
@@ -17,10 +16,11 @@ export const mockEvents: Event[] = [
       avatar: 'https://cdn-icons-png.freepik.com/512/1010/1010047.png',
       profileUrl: 'https://cdn-icons-png.freepik.com/512/1010/1010047.png',
     },
+    backgroundColor: "#E4F6ED",
     // recurringEvent: {
     //   isRecurring: true,
     //   repeatDuration: 10,
-    //   until: dayjs().add(1, 'week').toISOString()
+    //   until: dayjs().add(1, 'week').format()
     // },
   },
   {
@@ -43,7 +43,8 @@ export const mockEvents: Event[] = [
       name: 'Alex Stan',
       avatar: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
       profileUrl: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
-    }
+    },
+    backgroundColor: "#E4F6ED",
   },
   {
     _id: Math.random().toString(),
@@ -57,7 +58,8 @@ export const mockEvents: Event[] = [
       name: 'Alex Stan',
       avatar: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
       profileUrl: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
-    }
+    },
+    backgroundColor: "#FF7F7F",
   },
   {
     _id: Math.random().toString(),
@@ -71,6 +73,7 @@ export const mockEvents: Event[] = [
       name: 'Alex Stan',
       avatar: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
       profileUrl: 'https://cdn-icons-png.freepik.com/512/3530/3530911.png',
-    }
+    },
+    backgroundColor: "#FFFFC5",
   }
 ]

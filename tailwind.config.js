@@ -15,6 +15,9 @@ export default {
           light: '#FFE4C8',
           dark: '#F9BE81',
         },
+        grey: {
+          light: '#d9d9d9',
+        },
         calendarTile: '#E4F6ED',
         background: '#C9EEF6',
       },

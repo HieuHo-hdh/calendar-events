@@ -12,7 +12,7 @@ type EventCardProps = {
 const EventCard: FC<EventCardProps> = ({ event }) => {
   const displayDuration = useMemo(() => handleDisplayEventDuration(event), [event.start, event.end])
   return (
-    <div className={`${event?.backgroundColor || "bg-orange-light"} rounded-lg p-4`}>
+    <div className="rounded-lg p-4" style={{ backgroundColor: event.backgroundColor || "#FFE4C8" }}>
       <div className="flex flex-row justify-between items-start gap-2">
         <div className="flex flex-col items-start text-left gap-1">
           <Tooltip title={event.title}>

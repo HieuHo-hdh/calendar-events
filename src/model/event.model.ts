@@ -8,7 +8,6 @@ export type Event = {
   backgroundColor?: string;
   subBackgroundColor?: string;
 
-  // date: string;
   start: string;
   end: string;
 
