@@ -2,7 +2,7 @@ import { handleParseDateTime } from "@/utils/dateTime.util"
 import { Button } from "antd"
 import dayjs from "dayjs"
 import { FC } from "react"
-import EventsList from "./EventsList"
+import EventsList from "@/components/Calendar/UpcomingEvents/EventsList"
 
 const UpcomingEvents: FC = () => {
   const today = dayjs()

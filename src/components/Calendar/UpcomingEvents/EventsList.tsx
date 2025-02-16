@@ -1,6 +1,6 @@
 import { mockEvents } from "@/mocks/Events"
 import { FC } from "react"
-import EventCard from "./EventCard"
+import EventCard from "@/components/Calendar/UpcomingEvents/EventCard"
 
 const EventsList: FC = () => {
   

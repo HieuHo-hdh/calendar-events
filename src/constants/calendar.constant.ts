@@ -1,0 +1,8 @@
+export enum CALENDAR_VIEW {
+  DAY = "day",
+  WEEK = "week",
+  MONTH = "month",
+  YEAR = "year",
+}
+
+export const CALENDAR_VIEW_OPTIONS = [CALENDAR_VIEW.DAY, CALENDAR_VIEW.WEEK, CALENDAR_VIEW.MONTH, CALENDAR_VIEW.YEAR] 

@@ -1,11 +1,14 @@
+import dayjs from "dayjs"
 import { FC, useContext, useMemo, useRef } from "react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'
-import { Button } from "antd"
+import { Button, Select, Tooltip } from "antd"
 import { LeftOutlined, RightOutlined } from "@ant-design/icons"
-import dayjs from "dayjs"
 import { CalendarContext } from "@/context/calendarContext"
+import { MONTH_YEAR_DISPLAY_FORMAT } from "@/constants/dateTime.constant"
+import { handleParseArrayToLabelValueArray } from "@/utils/array.util"
+import { CALENDAR_VIEW, CALENDAR_VIEW_OPTIONS } from "@/constants/calendar.constant"
 
 const MainCalendar: FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
@@ -38,7 +41,7 @@ const MainCalendar: FC = () => {
   }
 
   const currentDate = useMemo(() => {
-    return dayjs(selectedDate).format('MMMM	YYYY')
+    return dayjs(selectedDate).format(MONTH_YEAR_DISPLAY_FORMAT);
   }, [selectedDate])
 
   const handleDateClick = (event: DateClickArg): void => {
@@ -48,25 +51,30 @@ const MainCalendar: FC = () => {
 
   return (
     <div className="full-calender-component flex flex-col bg-white border-solid border-gray-200 border-2 p-4 flex-auto xl:flex-1 h-[calc(100vh-2rem)] xl:h-[unset] rounded-md">
-      <div className="flex flex-row mb-4 gap-4 items-center">
-        <Button type="default" className="rounded-xl border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" onClick={handleToday}>Today</Button>
-        <div>
-          <Button
-            type="link"
-            className="text-blue-dark hover:text-blue-light rounded-full"
-            size="middle"
-            icon={<LeftOutlined className="w-full"/>}
-            onClick={handlePrevMonth}
-          />
-          <Button
-            type="link"
-            className="text-blue-dark hover:text-blue-light rounded-full"
-            size="middle"
-            icon={<RightOutlined className="w-full" />}
-            onClick={handleNextMonth}
-          />
-        </div>
+      <div className="flex flex-row mb-4 items-center justify-between">
+        <div className="flex flex-row gap-4">
+          <Button type="default" className="border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" onClick={handleToday}>Today</Button>
+          <div>
+            <Button
+              type="link"
+              className="text-blue-dark hover:text-blue-light rounded-full"
+              size="middle"
+              icon={<LeftOutlined className="w-full"/>}
+              onClick={handlePrevMonth}
+            />
+            <Button
+              type="link"
+              className="text-blue-dark hover:text-blue-light rounded-full"
+              size="middle"
+              icon={<RightOutlined className="w-full" />}
+              onClick={handleNextMonth}
+            />
+          </div>
         <span className="text-blue-dark font-semibold text-lg">{currentDate}</span>
+        </div>
+        <Tooltip title="This feature is coming soon" placement="leftBottom">
+          <Select variant="outlined" popupClassName="capitalize" className="capitalize border-blue-dark text-blue-dark hover:text-blue-light hover:border-blue-light" value={CALENDAR_VIEW.MONTH} options={handleParseArrayToLabelValueArray(CALENDAR_VIEW_OPTIONS)} />
+        </Tooltip>
       </div>
       <FullCalendar
         ref={calendarRef}
