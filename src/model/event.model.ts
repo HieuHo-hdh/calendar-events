@@ -20,6 +20,6 @@ export type Event = {
 export type RecurDetail = {
   isRecur?: boolean;
   parentEventId: string;
-  repeatFrequency?: string; // How often an event will run again. For example: daily, weekly, monthly, yearly. Will pass a number as total duration
-  repeatUntil?: string;
+  repeatFrequency: string; // How often an event will run again. For example: daily, weekly, monthly, yearly. Will pass a number as total duration
+  repeatUntil: string;
 }

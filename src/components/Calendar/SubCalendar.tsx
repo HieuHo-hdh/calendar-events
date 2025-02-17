@@ -38,6 +38,7 @@ const SubCalendar: FC = () => {
               onClick={() => handleHeaderPrev(value, onChange)}
             />
             <DatePicker
+              allowClear={false}
               className="text-lg text-blue-dark font-semibold"
               picker="month"
               value={dayjs(value)}

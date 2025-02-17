@@ -6,6 +6,7 @@ import { mockProfile } from "@/mocks/Events.mock";
 import { Event } from "@/model/event.model";
 import { STORE_ACTIONS } from "@/reducer/appReducer";
 import { handleParseArrayToLabelValueArray } from "@/utils/array.util";
+import { handleGenerateRecurringEvents } from "@/utils/calendarEvent.util";
 import { handleParseTimezoneToLabelValueArray } from "@/utils/timezone.util";
 import { Checkbox, ColorPicker, DatePicker, Form, Input, Modal, Radio, Select } from "antd"
 import { Color } from "antd/es/color-picker";
@@ -39,9 +40,13 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
 
   const [formCreateEvent] = Form.useForm()
 
+  const handleColorChange = (color: Color) => {
+    formCreateEvent.setFieldValue('backgroundColor', color.toHexString());
+  };
+
   const handleCreateEvent = (formValues: CreateEventForm) => {
     const [startDuration, endDuration] = formValues.duration
-    const startByTimeZone = dayjs(startDuration)
+    const startByTimeZone = dayjs(startDuration).tz(formValues.timezone)
     const endByTimeZone = dayjs(endDuration).tz(formValues.timezone)
     const newEventId = Math.random().toString();
 
@@ -49,7 +54,7 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
       _id: newEventId,
       title: formValues.title,
       type: formValues.type,
-      backgroundColor: formValues.backgroundColor?.toHexString(),
+      backgroundColor: formValues.backgroundColor,
       timezone: formValues.timezone,
       start: startByTimeZone.toISOString(),
       end: endByTimeZone.toISOString(),
@@ -69,9 +74,11 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
       }
 
       // TODO: Loop to add new event here
+      const recurringEvents = handleGenerateRecurringEvents(submitFormFields)
+      dispatch({ type: STORE_ACTIONS.CREATE_EVENTS, newEvents: recurringEvents });
     }
+    else dispatch({ type: STORE_ACTIONS.CREATE_EVENT, newEvent: submitFormFields });
     console.log('submitFormFields:', submitFormFields)
-    dispatch({ type: STORE_ACTIONS.CREATE_EVENT, newEvent: submitFormFields });
     onCancel()
   }
 
@@ -97,6 +104,9 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
       centered
       title={<span className="capitalize">Create {type}</span>}
       okText="Save"
+      afterOpenChange={() => formCreateEvent.setFieldsValue({
+        duration: [dayjs(clickedDay).startOf('d'), dayjs(clickedDay).endOf('d')],
+      })}
       open={open}
       onCancel={onCancel}
       onOk={() => formCreateEvent.submit()}
@@ -105,7 +115,6 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
         form={formCreateEvent}
         initialValues={{
           type: EVENT_TYPE.APPOINTMENT,
-          duration: [dayjs(clickedDay).startOf('d'), dayjs(clickedDay).endOf('d')],
           timezone: TIMEZONE.UTC_PLUS_7,
           isRecur: false,
           link: "https://calendar.google.com/calendar/"
@@ -164,8 +173,13 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
         <Form.Item
           name="backgroundColor"
           label="Color"
+          rules={[
+            {
+              required: true,
+            },
+          ]}
         >
-          <ColorPicker format="hex" />
+          <ColorPicker format="hex" onChange={handleColorChange}  />
         </Form.Item>
         {
           type === EVENT_TYPE.APPOINTMENT ? (
@@ -201,12 +215,22 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
               <Form.Item
                 name="recurInterval"
                 label="Repeat"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
               >
                 <Select className="capitalize" popupClassName="capitalize" options={handleParseArrayToLabelValueArray(RECUR_EVENT_TYPES)} />
               </Form.Item>
               <Form.Item
                 name="recurUntil"
                 label="Until"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
               >
                 <DatePicker
                   className="w-full"

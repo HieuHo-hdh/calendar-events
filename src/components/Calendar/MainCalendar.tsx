@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from "dayjs"
-import { FC, useContext, useMemo, useRef, useState } from "react"
+import { FC, useContext, useEffect, useMemo, useRef, useState } from "react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'
@@ -75,6 +75,13 @@ const MainCalendar: FC = () => {
     setShowEventDetailModal(isVisible)
   }
 
+  useEffect(() => {   
+    if(calendarRef?.current && selectedDate) {
+      const newDate = new Date(selectedDate.toISOString())
+      calendarRef.current.getApi().gotoDate(newDate)
+    }
+  }, [calendarRef, selectedDate])
+
   return (
     <div className="full-calender-component flex flex-col bg-white border-solid border-gray-200 border-2 p-4 flex-auto xl:flex-1 h-[calc(100vh-2rem)] xl:h-[unset] rounded-md">
       <div className="flex sm:flex-row flex-col gap-2 sm:gap-0 mb-4 items-center justify-between">
@@ -122,7 +129,11 @@ const MainCalendar: FC = () => {
         dateClick={handleDateClick}
         eventClick={handleEventClick}
       />
-      <CreateEventModal open={showCreateEventModal} onCancel={() => handleShowCreateEventModal(false)} clickedDay={clickedDay} />
+      <CreateEventModal
+        open={showCreateEventModal}
+        onCancel={() => handleShowCreateEventModal(false)}
+        clickedDay={clickedDay}
+      />
       <EventDetailModal
         open={showEventDetailModal}
         onCancel={() => handleShowEventDetailModal(false)}

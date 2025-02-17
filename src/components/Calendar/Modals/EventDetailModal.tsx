@@ -10,6 +10,8 @@ import { handleParseTimezoneToLabelValueArray } from "@/utils/timezone.util";
 import EventDetailCard from "./EventDetailCard";
 import { AppContext } from "@/context/appContext";
 import { STORE_ACTIONS } from "@/reducer/appReducer";
+import { Color } from "antd/es/color-picker";
+import { mockProfile } from "@/mocks/Events.mock";
 
 const { RangePicker } = DatePicker;
 
@@ -22,6 +24,9 @@ type EventDetailModalProps = {
 type EditEventForm = Event & {
   duration: string
   isRecur: boolean
+  recurInterval: string
+  recurUntil: string
+  backgroundColor: Color
 }
 
 const EventDetailModal: FC<EventDetailModalProps> = ({
@@ -39,6 +44,29 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
   const type = Form.useWatch('type', formEditEvent)
   const isRecur = Form.useWatch('isRecur', formEditEvent)
 
+  const handleColorChange = (color: Color) => {
+    formEditEvent.setFieldValue('backgroundColor', color.toHexString());
+  };
+
+  const handleUpdateEvent = (formValues: EditEventForm) => {
+    const [startDuration, endDuration] = formValues.duration
+    const startByTimeZone = dayjs(startDuration).tz(formValues.timezone)
+    const endByTimeZone = dayjs(endDuration).tz(formValues.timezone)
+    const submitFormFields: Event = {
+      _id: clickedEvent?.extendedProps?._id,
+      title: formValues.title,
+      type: formValues.type,
+      backgroundColor: formValues.backgroundColor,
+      timezone: formValues.timezone,
+      start: startByTimeZone.toISOString(),
+      end: endByTimeZone.toISOString(),
+      link: formValues.link,
+      profile: mockProfile,
+    }
+    dispatch({ type: STORE_ACTIONS.UPDATE_EVENT, updateEvent: submitFormFields });
+    onCancel()
+  }
+
   const eventInfo = useMemo(() =>{
     const formattedEvent = {
       ...clickedEvent,
@@ -54,19 +82,13 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
     return formattedEvent
   }, [clickedEvent])
 
-  const handleEditEvent = (formValues: EditEventForm) => {
-    console.log('form::', formValues)
-    const [startDuration, endDuration] = formValues.duration
-    const startByTimeZone = dayjs(startDuration).tz(formValues.timezone)
-    const endByTimeZone = dayjs(endDuration).tz(formValues.timezone)
-
-    console.log('startByTimeZone:', startByTimeZone, startByTimeZone.toISOString(), startByTimeZone.format())
-    console.log('endByTimeZone:', endByTimeZone, endByTimeZone.toISOString(), endByTimeZone.format())
-
-  }
-
   const handleDeleteEvent = () => {
     dispatch({ type: STORE_ACTIONS.DELETE_EVENT, deleteEventId: eventInfo._id });
+    onCancel();
+  }
+
+  const handleDeleteEvents = () => {
+    dispatch({ type: STORE_ACTIONS.DELETE_EVENTS, deleteRecurredEventId: eventInfo?.extendedProps?.recurDetail?.parentEventId });
     onCancel();
   }
 
@@ -76,7 +98,6 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
       setIsEdit(false)
     }
   }, [open, formEditEvent])
-
 
   useEffect(() => {
     formEditEvent.setFieldsValue({
@@ -93,23 +114,39 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
           <span className="capitalize">{eventInfo?.title}</span>
           <div className="flex flex-row gap-2 items-center">
             <Switch rootClassName="text-sm" checkedChildren="View" unCheckedChildren="Edit" checked={isEdit} onChange={() => setIsEdit(!isEdit)} className="w-fit text-sm" />
-              <Popconfirm
-                title="Delete the task"
-                description="Are you sure to delete this task?"
-                onConfirm={handleDeleteEvent}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button type="primary" danger className="text-xs p-2 h-6 rounded-full">Delete</Button>
-              </Popconfirm>
+            <Popconfirm
+              title="Delete the event"
+              description="Are you sure to delete this event?"
+              onConfirm={handleDeleteEvent}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" danger className="text-xs p-2 h-6 rounded-full">Delete</Button>
+            </Popconfirm>
+            {
+              eventInfo?.extendedProps?.recurDetail?.isRecur && (
+                <Popconfirm
+                  title="Delete all recurring events"
+                  description="Are you sure to delete all recurring events?"
+                  onConfirm={handleDeleteEvents}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button type="primary" danger className="text-xs p-2 h-6 rounded-full">Delete recurring events</Button>
+                </Popconfirm>
+              )
+            }
+
           </div>
         </div>
       }
-      okText="Save"
       open={open}
       onCancel={onCancel}
-      zIndex={100000}
-      onOk={() => formEditEvent.submit()}
+      zIndex={1000}
+      footer={<div className="flex gap-2 justify-end">
+        <Button onClick={() => onCancel()}>Cancel</Button>
+        <Button type="primary" onClick={() => formEditEvent.submit()} disabled={!isEdit}>Save</Button>
+      </div>}
     >
       {
         !isEdit ? (
@@ -117,10 +154,10 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
         ) : (
           <Form
             form={formEditEvent}
-            onFinish={handleEditEvent}
             labelCol={{ span: 4 }}
             wrapperCol={{ span: 28 }}
             layout="horizontal"
+            onFinish={handleUpdateEvent}
           >
             <Form.Item
               name="title"
@@ -171,7 +208,7 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
               name="backgroundColor"
               label="Color"
             >
-              <ColorPicker />
+              <ColorPicker format="hex" onChange={handleColorChange}  />
             </Form.Item>
             {
               type === EVENT_TYPE.APPOINTMENT ? (
@@ -199,7 +236,7 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
               label="Recurring"
               valuePropName="checked"
             >
-              <Checkbox />
+              <Checkbox disabled />
             </Form.Item>
             {
               isRecur && (
@@ -207,13 +244,14 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
                   <Form.Item
                     name="recurInterval"
                     label="Repeat"
+                    
                     rules={[
                       {
                         required: true,
                       },
                     ]}
                   >
-                    <Select className="capitalize" popupClassName="capitalize" options={handleParseArrayToLabelValueArray(RECUR_EVENT_TYPES)} />
+                    <Select disabled className="capitalize" popupClassName="capitalize" options={handleParseArrayToLabelValueArray(RECUR_EVENT_TYPES)} />
                   </Form.Item>
                   <Form.Item
                     name="recurUntil"
@@ -225,6 +263,7 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
                     ]}
                   >
                     <DatePicker
+                      disabled
                       className="w-full"
                       format={DATE_DISPLAY_FORMAT}
                       disabledDate={(date: Dayjs) => {
