@@ -1,6 +1,6 @@
 {
   "name": "solution",
-  "private": true,
+  "private": false,
   "version": "0.0.0",
   "type": "module",
   "homepage": "https://hieuho-hdh.github.io/calendar-events",
