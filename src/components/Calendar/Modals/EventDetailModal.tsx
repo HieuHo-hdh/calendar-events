@@ -7,7 +7,7 @@ import { EVENT_TYPE, EVENT_TYPES, RECUR_EVENT_TYPES } from "@/constants/event.co
 import { Event } from "@/model/event.model";
 import { handleParseArrayToLabelValueArray } from "@/utils/array.util";
 import { handleParseTimezoneToLabelValueArray } from "@/utils/timezone.util";
-import EventCard from "@/components/Calendar/UpcomingEvents/EventCard";
+import EventDetailCard from "./EventDetailCard";
 
 const { RangePicker } = DatePicker;
 
@@ -89,7 +89,7 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
     >
       {
         !isEdit ? (
-          <EventCard event={eventInfo} />
+          <EventDetailCard event={eventInfo} />
         ) : (
           <Form
             form={formEditEvent}
@@ -188,7 +188,7 @@ const EventDetailModal: FC<EventDetailModalProps> = ({
                 <>
                   <Form.Item
                     name="recurInterval"
-                    label="Interval"
+                    label="Repeat"
                     rules={[
                       {
                         required: true,

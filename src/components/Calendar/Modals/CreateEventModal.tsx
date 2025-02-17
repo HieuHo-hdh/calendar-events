@@ -160,7 +160,7 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
             <>
               <Form.Item
                 name="recurInterval"
-                label="Interval"
+                label="Repeat"
               >
                 <Select className="capitalize" popupClassName="capitalize" options={handleParseArrayToLabelValueArray(RECUR_EVENT_TYPES)} />
               </Form.Item>
