@@ -11,6 +11,10 @@ type EventCardProps = {
 
 const EventCard: FC<EventCardProps> = ({ event }) => {
   const displayDuration = useMemo(() => handleDisplayEventDuration(event), [event.start, event.end])
+  const handleOpenLink = (link: string): void => {
+    window.open(link, '_blank');
+  };
+
   return (
     <div className="rounded-lg p-4" style={{ backgroundColor: event.backgroundColor || "#FFE4C8" }}>
       <div className="flex flex-row justify-between items-start gap-2">
@@ -24,7 +28,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
         </div>
         {
           event.type === EVENT_TYPE.APPOINTMENT && event?.link && (
-            <Button type="primary" className="bg-blue-dark hover:bg-blue-light min-w-10 rounded-full" size="large" icon={<VideoCameraOutlined className="w-full"/>}  />
+            <Button onClick={() => handleOpenLink(event.link!)} type="primary" className="bg-blue-dark hover:bg-blue-light min-w-10 rounded-full" size="large" icon={<VideoCameraOutlined className="w-full"/>}  />
           )
         }
       </div>
@@ -32,7 +36,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
         event.type === EVENT_TYPE.APPOINTMENT && (
           <div className="flex flex-row mt-2 gap-2">
             <img src={event?.profile?.avatar} alt="img" className="w-6 rounded-full"/>
-            <a href={event?.profile?.profileUrl} className="underline cursor-pointer">View Client Profile</a>
+            <a href={event?.profile?.profileUrl} className="underline cursor-pointer" target="_blank" rel="noopener noreferrer">View Client Profile</a>
           </div>
         )
       }

@@ -1,6 +1,7 @@
 import { DATE_FORMAT, DATE_TIME_12HOUR_DISPLAY_FORMAT, DATE_TIME_FORMAT, TIME_12HOUR_DISPLAY_FORMAT, TIMEZONE_DISPLAY_FORMAT } from "@/constants/dateTime.constant";
 import { Event } from "@/model/event.model";
 import dayjs, { Dayjs } from "dayjs";
+import { getDateTimeByTimezone } from "@/utils/timezone.util";
 
 export const handleParseDateTime = (dateTime: Dayjs | string, option?: { toFormat?: string, fromFormat?: string, dateOnly?: boolean }) => {
   const parsedFromFormat = option?.fromFormat || (option?.dateOnly ? DATE_FORMAT : DATE_TIME_FORMAT);
@@ -11,7 +12,7 @@ export const handleParseDateTime = (dateTime: Dayjs | string, option?: { toForma
   return dateTime.format(parsedToFormat);
 }
 
-export const isSameDay = (day1: string, day2: string) => {
+export const isSameDay = (day1: string | Dayjs, day2: string | Dayjs) => {
   if (!day1 || !day2) return false;
   return dayjs(day1).isSame(day2, 'day');
 }
@@ -22,11 +23,13 @@ export const isSameTimezone = (day1: string, day2: string) => {
 }
 
 export const handleDisplayEventDuration = (event: Event): string => {
-  const _isSamePeriod = isSameTimezone(event.start, event.end)
-  const toFormat = isSameDay(event.start, event.end) ? TIME_12HOUR_DISPLAY_FORMAT : DATE_TIME_12HOUR_DISPLAY_FORMAT
+  const eventStart = getDateTimeByTimezone(event.start, event.timezone)
+  const eventEnd = getDateTimeByTimezone(event.end, event.timezone)
+  const _isSamePeriod = true // TODO: If implement timezone for start and end time separatedly
+  const toFormat = isSameDay(eventStart, eventEnd) ? TIME_12HOUR_DISPLAY_FORMAT : DATE_TIME_12HOUR_DISPLAY_FORMAT
   const displayStart = _isSamePeriod 
-    ? handleParseDateTime(event.start, {toFormat}) 
-    : `${handleParseDateTime(event.start, {toFormat})} GMT${handleParseDateTime(event.start, {toFormat: TIMEZONE_DISPLAY_FORMAT})}`;
-  const displayEnd = `${handleParseDateTime(event.end, {toFormat})} GMT${handleParseDateTime(event.end, {toFormat: TIMEZONE_DISPLAY_FORMAT})}`
+    ? handleParseDateTime(eventStart, {toFormat}) 
+    : `${handleParseDateTime(eventStart, {toFormat})} GMT${handleParseDateTime(eventStart, {toFormat: TIMEZONE_DISPLAY_FORMAT})}`;
+  const displayEnd = `${handleParseDateTime(eventEnd, {toFormat})} GMT${handleParseDateTime(eventEnd, {toFormat: TIMEZONE_DISPLAY_FORMAT})}`
   return `${displayStart} - ${displayEnd}`
 }

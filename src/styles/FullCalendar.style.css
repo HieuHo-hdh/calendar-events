@@ -1,3 +1,7 @@
 .fc-theme-standard .fc-popover {
   max-width: 300px;
 }
+
+.fc-direction-ltr .fc-daygrid-event .fc-event-time {
+  min-width: fit-content;
+}

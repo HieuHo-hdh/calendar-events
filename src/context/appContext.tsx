@@ -1,8 +1,18 @@
-import { createContext, FC, ReactNode, useState } from "react";
+import { mockEvents } from "@/mocks/Events.mock";
+import { Event } from "@/model/event.model";
+import { appReducer } from "@/reducer/appReducer";
+import { createContext, FC, ReactNode, useReducer } from "react";
 
 type AppContextType = {
-  selectedDate: Date | undefined;
-  setSelectedDate: (value: Date) => void;
+  state: {
+    events: Event[]
+  };
+  dispatch: (action: { 
+    type: string,
+    newEvent: Event,
+    updateEvent: Event,
+    deleteEventId: string,
+  }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -12,11 +22,9 @@ type AppContextProps = {
 }
 
 const AppProvider: FC<AppContextProps> = ({ children }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+  const [state, dispatch] = useReducer(appReducer, { events: mockEvents });
 
-  return <AppContext.Provider
-    value={{ selectedDate, setSelectedDate }}
-  >
+  return <AppContext.Provider value={{ state, dispatch }}>
     {children}
   </AppContext.Provider>
 };

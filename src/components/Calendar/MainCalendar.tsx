@@ -3,26 +3,32 @@ import { FC, useContext, useMemo, useRef, useState } from "react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'
+import { EventClickArg } from "@fullcalendar/core/index.js"
 import { Button, Select, Tooltip } from "antd"
 import { LeftOutlined, RightOutlined } from "@ant-design/icons"
-import { CalendarContext } from "@/context/calendarContext"
 import { MONTH_YEAR_DISPLAY_FORMAT } from "@/constants/dateTime.constant"
 import { handleParseArrayToLabelValueArray } from "@/utils/array.util"
 import { CALENDAR_VIEW, CALENDAR_VIEW_OPTIONS } from "@/constants/calendar.constant"
 import CreateEventModal from "@/components/Calendar/Modals/CreateEventModal"
-import { mockEvents } from "@/mocks/Events"
+import { AppContext } from "@/context/appContext"
+import { CalendarContext } from "@/context/calendarContext"
 import '@/styles/FullCalendar.style.css'
-import { EventClickArg } from "@fullcalendar/core/index.js"
+import EventDetailModal from "@/components/Calendar/Modals/EventDetailModal"
+import { Dictionary } from "@fullcalendar/core/internal"
+import { Event } from "@/model/event.model"
 
 const MainCalendar: FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
   const [showCreateEventModal, setShowCreateEventModal] = useState<boolean>(false);
+  const [showEventDetailModal, setShowEventDetailModal] = useState<boolean>(false);
   const [clickedDay, setClickedDay] = useState<Dayjs>(dayjs());
+  const [clickedEvent, setClickedEvent] = useState<(Event & Dictionary)>();
 
   const context = useContext(CalendarContext);
-  if (!context) throw new Error("Context is undefined");
+  const appContext = useContext(AppContext);
+  if (!context || !appContext) throw new Error("Context is undefined");
   const { selectedDate, setSelectedDate } = context ?? {};
-  
+  const { state: { events } } = appContext ?? {};
   const currentDate = useMemo(() => {
     return dayjs(selectedDate).format(MONTH_YEAR_DISPLAY_FORMAT);
   }, [selectedDate])
@@ -56,13 +62,17 @@ const MainCalendar: FC = () => {
   }
 
   const handleEventClick = (event: EventClickArg): void => {
-    const eventInfo = event.event.toJSON()
-    console.log('Event detail', eventInfo)
-    // TODO: Show event detail and edit
+    const eventInfo: Event & Dictionary = event.event.toJSON() as Event & Dictionary
+    setClickedEvent(eventInfo)
+    setShowEventDetailModal(true)
   }
 
-  const handleShowCreateEventModel = (isVisible: boolean) => {
+  const handleShowCreateEventModal = (isVisible: boolean) => {
     setShowCreateEventModal(isVisible)
+  }
+
+  const handleShowEventDetailModal = (isVisible: boolean) => {
+    setShowEventDetailModal(isVisible)
   }
 
   return (
@@ -96,15 +106,14 @@ const MainCalendar: FC = () => {
       </div>
       <FullCalendar
         ref={calendarRef}
+        headerToolbar={false}
         height={'100%'}
         plugins={[dayGridPlugin, interactionPlugin]}
-        headerToolbar={false}
         initialView="dayGridMonth"
-        editable={true}
         selectable={true}
-        eventDisplay="list-item"
+        eventDisplay="block"
         dayMaxEvents={true}
-        events={mockEvents}
+        events={events}
         eventTimeFormat={{
           hour: 'numeric',
           minute: 'numeric',
@@ -113,7 +122,12 @@ const MainCalendar: FC = () => {
         dateClick={handleDateClick}
         eventClick={handleEventClick}
       />
-      <CreateEventModal open={showCreateEventModal} onCancel={() => handleShowCreateEventModel(false)} clickedDay={clickedDay} />
+      <CreateEventModal open={showCreateEventModal} onCancel={() => handleShowCreateEventModal(false)} clickedDay={clickedDay} />
+      <EventDetailModal
+        open={showEventDetailModal}
+        onCancel={() => handleShowEventDetailModal(false)}
+        clickedEvent={clickedEvent!}
+      />
     </div>
   )
 }

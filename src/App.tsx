@@ -10,6 +10,11 @@ function App() {
       theme={{
         token: {
           colorPrimary: "#0F4C81",
+        },
+        components: {
+          Form: {
+            "marginLG": 12,
+          }
         }
       }}
     >

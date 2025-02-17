@@ -6,22 +6,19 @@ export type Event = {
   title: string;
   type: EVENT_TYPE;
   backgroundColor?: string;
-  subBackgroundColor?: string;
-
+  textColor?: string;
   start: string;
   end: string;
-
+  timezone: string;
   link?: string;
   profile?: Profile;
 
   // recurring events
-  recurringEvent?: EventRecurring;
+  recurDetail?: RecurDetail;
 }
 
-export type EventRecurring = {
-  isRecurring?: boolean;
+export type RecurDetail = {
+  isRecur?: boolean;
   repeatFrequency?: string; // How often an event will run again. For example: daily, weekly, monthly, yearly. Will pass a number as total duration
-  repeatPeriod?: number;
-  // repeatDuration?: number; // How long an event will run again. For example: daily, weekly, monthly, yearly.
-  // endDate?: string; // When the recurring event will stop. If it's not provided, the recurring event will run indefinitely.
+  repeatUntil?: string;
 }
