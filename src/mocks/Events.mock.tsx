@@ -2,6 +2,13 @@ import { EVENT_TYPE } from "@/constants/event.constant";
 import { Event } from "@/model/event.model";
 import dayjs from "dayjs";
 
+export const mockProfile = {
+  _id: Math.random().toString(),
+  name: 'Alex Stan',
+  avatar: 'https://cdn-icons-png.freepik.com/512/1010/1010047.png',
+  profileUrl: 'https://cdn-icons-png.freepik.com/512/1010/1010047.png',
+}
+
 export const mockEvents: Event[] = [
   {
     _id: Math.random().toString(),
@@ -21,7 +28,7 @@ export const mockEvents: Event[] = [
     timezone: 'Asia/Bangkok',
   },
   {
-    _id: Math.random().toString(),
+    _id: "recur-1",
     title: 'Recurring events [MOCK]',
     type: EVENT_TYPE.APPOINTMENT,
     start: dayjs().toISOString(),
@@ -37,6 +44,7 @@ export const mockEvents: Event[] = [
     textColor: "black",
     timezone: 'Asia/Bangkok',
     recurDetail: {
+      parentEventId: "recur-1",
       isRecur: true,
       repeatFrequency: 'daily',
       repeatUntil: dayjs().add(3, 'd').toISOString(),

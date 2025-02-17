@@ -9,9 +9,9 @@ type AppContextType = {
   };
   dispatch: (action: { 
     type: string,
-    newEvent: Event,
-    updateEvent: Event,
-    deleteEventId: string,
+    newEvent?: Event,
+    updateEvent?: Event,
+    deleteEventId?: string,
   }) => void;
 }
 

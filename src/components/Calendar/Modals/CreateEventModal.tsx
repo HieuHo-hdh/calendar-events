@@ -1,12 +1,16 @@
 import { DATE_DISPLAY_FORMAT } from "@/constants/dateTime.constant";
 import { EVENT_TYPE, EVENT_TYPES, RECUR_EVENT_TYPES } from "@/constants/event.constant";
 import { TIMEZONE } from "@/constants/timezone.constant";
+import { AppContext } from "@/context/appContext";
+import { mockProfile } from "@/mocks/Events.mock";
 import { Event } from "@/model/event.model";
+import { STORE_ACTIONS } from "@/reducer/appReducer";
 import { handleParseArrayToLabelValueArray } from "@/utils/array.util";
 import { handleParseTimezoneToLabelValueArray } from "@/utils/timezone.util";
 import { Checkbox, ColorPicker, DatePicker, Form, Input, Modal, Radio, Select } from "antd"
+import { Color } from "antd/es/color-picker";
 import dayjs, { Dayjs } from "dayjs";
-import { FC, useEffect } from "react"
+import { FC, useContext, useEffect } from "react"
 
 const { RangePicker } = DatePicker;
 
@@ -19,6 +23,9 @@ type CreateEventModalProps = {
 type CreateEventForm = Event & {
   duration: string
   isRecur: boolean
+  recurInterval: string
+  recurUntil: string
+  backgroundColor: Color
 }
 
 const CreateEventModal: FC<CreateEventModalProps> = ({
@@ -26,24 +33,64 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
   onCancel,
   clickedDay,
 }) => {
+  const appContext = useContext(AppContext);
+  if (!appContext) throw new Error("Context is undefined");
+  const { dispatch } = appContext ?? {};
+
   const [formCreateEvent] = Form.useForm()
 
   const handleCreateEvent = (formValues: CreateEventForm) => {
     const [startDuration, endDuration] = formValues.duration
-    const startByTimeZone = dayjs(startDuration).tz(formValues.timezone)
+    const startByTimeZone = dayjs(startDuration)
     const endByTimeZone = dayjs(endDuration).tz(formValues.timezone)
-    
-    console.log('startByTimeZone:', startByTimeZone, startByTimeZone.toISOString(), startByTimeZone.format())
-    console.log('endByTimeZone:', endByTimeZone, endByTimeZone.toISOString(), endByTimeZone.format())
-    console.log('form::', formValues)
+    const newEventId = Math.random().toString();
+
+    let submitFormFields: Event = {
+      _id: newEventId,
+      title: formValues.title,
+      type: formValues.type,
+      backgroundColor: formValues.backgroundColor?.toHexString(),
+      timezone: formValues.timezone,
+      start: startByTimeZone.toISOString(),
+      end: endByTimeZone.toISOString(),
+      link: formValues.link,
+      profile: mockProfile,
+    }
+
+    if (formValues.isRecur) {
+      submitFormFields = { 
+        ...submitFormFields,
+        recurDetail: {
+          isRecur: true,
+          parentEventId: newEventId,
+          repeatFrequency: formValues.recurInterval,
+          repeatUntil: dayjs(recurUntil).toISOString(),
+        }
+      }
+
+      // TODO: Loop to add new event here
+    }
+    console.log('submitFormFields:', submitFormFields)
+    dispatch({ type: STORE_ACTIONS.CREATE_EVENT, newEvent: submitFormFields });
+    onCancel()
   }
+
+  const type = Form.useWatch('type', formCreateEvent)
+  const isRecur = Form.useWatch('isRecur', formCreateEvent)
+  const startDate = Form.useWatch('duration', formCreateEvent)?.[0]
+  const recurUntil = Form.useWatch('recurUntil', formCreateEvent)
 
   useEffect(() => {
     if (!open) formCreateEvent.resetFields()
   }, [open, formCreateEvent])
 
-  const type = Form.useWatch('type', formCreateEvent)
-  const isRecur = Form.useWatch('isRecur', formCreateEvent)
+  useEffect(() => {
+    if (dayjs(recurUntil).isBefore(startDate)) {
+      formCreateEvent.setFieldsValue({
+        recurUntil: dayjs(startDate).add(1, 'day'),
+      })
+    }
+  }, [startDate, recurUntil, formCreateEvent])
 
   return (
     <Modal
@@ -58,9 +105,8 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
         form={formCreateEvent}
         initialValues={{
           type: EVENT_TYPE.APPOINTMENT,
-          duration: [clickedDay, clickedDay],
+          duration: [dayjs(clickedDay).startOf('d'), dayjs(clickedDay).endOf('d')],
           timezone: TIMEZONE.UTC_PLUS_7,
-          backgroundColor: "#0F4C81",
           isRecur: false,
           link: "https://calendar.google.com/calendar/"
         }}
@@ -119,7 +165,7 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
           name="backgroundColor"
           label="Color"
         >
-          <ColorPicker />
+          <ColorPicker format="hex" />
         </Form.Item>
         {
           type === EVENT_TYPE.APPOINTMENT ? (
@@ -129,12 +175,6 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
                 label="Link"
               >
                 <Input />
-              </Form.Item>
-              <Form.Item
-                name="clientProfile"
-                label="Client"
-              >
-                <Select />
               </Form.Item>
             </>
           ) : (
@@ -172,7 +212,10 @@ const CreateEventModal: FC<CreateEventModalProps> = ({
                   className="w-full"
                   format={DATE_DISPLAY_FORMAT}
                   disabledDate={(date: Dayjs) => {
-                    return dayjs(date).isBefore(dayjs());
+                    if (startDate) {
+                      return dayjs(date).isBefore(dayjs(startDate));
+                    }
+                    return false;
                   }}
                   showNow={false}
                 />

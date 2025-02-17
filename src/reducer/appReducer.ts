@@ -7,25 +7,22 @@ export enum STORE_ACTIONS {
 }
 
 export const appReducer = (
-  state: { events: Event[] }, 
-  action: { 
-    type: string,
-    newEvent: Event,
-    updateEvent: Event,
-    deleteEventId: string,
-  }
+  state: { events: Event[] },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
 ) => {
   switch (action.type) {
     case STORE_ACTIONS.CREATE_EVENT:
       return { events: [...state.events, action.newEvent ] };
     case STORE_ACTIONS.UPDATE_EVENT: {
       const updatedEvents = state.events.map((event) =>
-        event._id === action.updateEvent._id? action.updateEvent : event
+        event._id === action?.updateEvent?._id? action.updateEvent : event
       );
       return { events: updatedEvents };
     }
-    case STORE_ACTIONS.DELETE_EVENT:
-      return { events: state.events.filter((event) => event._id === action.deleteEventId)};
+    case STORE_ACTIONS.DELETE_EVENT: {
+      return { events: state.events.filter((event) => event?._id !== action?.deleteEventId)};
+    }
     default:
       return state;
   }
